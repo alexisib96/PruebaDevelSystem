@@ -1,0 +1,360 @@
+﻿@model List<Encuesta>
+
+<style type="text/css">
+    .btn-estilo {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 16px;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        border: 2px solid #3498db;
+        border-radius: 5px;
+        color: #3498db;
+        background-color: #ffffff;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+        .btn-estilo:hover {
+            background-color: #3498db;
+            color: #ffffff;
+        }
+
+    .input-estilo {
+        width: 200px;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+        font-size: 14px;
+    }
+
+        .input-estilo:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+
+    .label-estilo {
+        font-size: 16px;
+        color: #333;
+        margin-bottom: 5px;
+        display: block;
+    }
+</style>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+
+    <!-- Agregar SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Lista de Encuestas</title>
+</head>
+<body>
+
+    <h2>Lista de Encuestas</h2>
+
+    <button class="btn btn-estilo" data-toggle="modal" data-target="#crearEncuestaModal">
+        Crear Encuesta
+    </button>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Descripcion</th>
+                <th>Link</th>
+                <th>Ver Resultado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tablaCamposEncuesta">
+            @foreach (var encuesta in Model)
+            {
+                <tr>
+                    <td>@encuesta.IDEncuesta</td>
+                    <td>@encuesta.Nombre</td>
+                    <td>@encuesta.Descripcion</td>
+                    <td>
+                        <a href="/Encuesta?guid=@encuesta.Link" target="_blank">Ver Encuesta</a>
+                    </td>
+                    <td>
+                        <a href="/Encuesta/Resultados?guid=@encuesta.Link" target="_blank">Ver Resultados</a>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" onclick="ElinminarEncuesta(@encuesta.IDEncuesta)">Eliminar</button>
+                        <button class="btn btn-success" onclick="EditarEncuesta('@encuesta.IDEncuesta', '@encuesta.Nombre', '@encuesta.Descripcion')">Editar</button>
+                    </td>
+                    <!-- Otros campos según la estructura de tu Encuesta -->
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="modal" id="crearEncuestaModal" tabindex="-1" role="dialog" aria-labelledby="crearEncuestaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="crearEncuestaModalLabel">Crear Encuesta</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="NombreEncuesta">Nombre de la Encuesta</label>
+                            <input type="text" class="form-control" id="NombreEncuesta" placeholder="Ingrese el Nombre">
+                        </div>
+                        <div class="form-group">
+                            <label for="descripcionEncuesta">Descripción de la Encuesta</label>
+                            <input type="text" class="form-control" id="descripcionEncuesta" placeholder="Ingrese la descripción">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="camposEncuesta">Campos de la Encuesta</label>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre Campo</th>
+                                        <th>Título</th>
+                                        <th>Requerido</th>
+                                        <th>Tipo</th>
+                                        <th>Agregar</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="camposCampos">
+                                    <tr>
+                                        <td><input type="text" name="txtNombreCampo" id="txtNombreCampo" class="form-control" /></td>
+                                        <td><input type="text" name="txtTitulo" id="txtTitulo" class="form-control" /></td>
+                                        <td><input type="checkbox" name="ckTipoo" id="ckTipoo" /></td>
+                                        <td><select id="lsTipo" class="form-control"></select></td>
+                                        <td><button type="button" class="btn btn-primary" onclick="AgregarCampo()">+</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Título</th>
+                                        <th>Requerido</th>
+                                        <th>Tipo</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="camposEncuestaContainer">
+                                </tbody>
+                            </table>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="CrearEncuesta()">Crear Encuesta</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="editarModal" tabindex="-1" role="dialog" aria-labelledby="editarEncuestaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editarEncuestaModalLabel">Editar Encuesta</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="editarNombreEncuesta">Nombre de la Encuesta</label>
+                            <input type="text" class="form-control" id="editarNombreEncuesta" placeholder="Ingrese el Nombre">
+                            <input type="text" class="form-control" id="editarId" hidden>
+                        </div>
+                        <div class="form-group">
+                            <label for="editardescripcionEncuesta">Descripción de la Encuesta</label>
+                            <input type="text" class="form-control" id="editardescripcionEncuesta" placeholder="Ingrese la descripción">
+                        </div>
+
+                        
+                        <button type="button" class="btn btn-primary" onclick="GuardarEncuestaActualizada()">Editar Encuesta</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="closeModalEditar" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var camposEncuesta = [];
+
+        function AgregarCampo() {
+
+
+            var nombreCampo = $('#txtNombreCampo').val();
+            var tituloCampo = $('#txtTitulo').val();
+            var esRequerido = $("#ckTipoo").prop("checked");
+            var tipoCampo = $('#lsTipo option:selected').val();
+            var tipoTexto = $('#lsTipo option:selected').text();
+
+
+            camposEncuesta.push({
+                        nombre: nombreCampo,
+                        titulo: tituloCampo,
+                        requerido: esRequerido,
+                        tipo: tipoCampo,
+                        tipoTexto: tipoTexto
+            });
+            ActualizarTablaCampos();
+
+            $("#ckTipoo").prop("checked", false);
+
+            // Limpiar los valores de otros campos
+            $('#txtNombreCampo').val('');
+            $('#txtTitulo').val('');
+            $('#lsTipo').val('');  // Si lsTipo es un campo de selección (dropdown)
+
+            // También puedes desmarcar todos los elementos seleccionados en un campo de selección (dropdown)
+            $('#lsTipo option:selected').prop('selected', false);
+        }
+
+        function EliminarCampo(index) {
+            camposEncuesta.splice(index, 1);
+            ActualizarTablaCampos();
+        }
+
+        function EditarEncuesta(id, nombre, descripcion) {
+            $('#editarModal').modal('show')
+
+            $('#editarNombreEncuesta').val(nombre);
+            $('#editardescripcionEncuesta').val(descripcion);
+            $('#editarId').val(id);
+        }
+
+        function GuardarEncuestaActualizada() {
+            var nombre = $('#editarNombreEncuesta').val();
+            var des = $('#editardescripcionEncuesta').val();
+            var edutar = $('#editarId').val()
+
+            $.ajax({
+                type: "POST", // o "GET" según tu necesidad
+                url: '/Home/GuardarEncuestaActualizada', // Reemplaza con la ruta correcta a tu controlador
+                data: {
+                    Nombre: nombre,
+                    Descripcion: des,
+                    IDEncuesta: edutar
+                },
+                success: function (data) {
+                    location.reload();
+                    alert("Encuesta actualizada con exito")
+                    $('#crearEncuestaModal').modal('hide');
+
+                },
+                error: function (data) {
+                    alert("Hubo un error al crear la encuesta.");
+                }
+            });
+        }
+
+        function ActualizarTablaCampos() {
+            document.getElementById("camposEncuestaContainer").innerHTML = "";
+
+            camposEncuesta.forEach(function (campo, index) {
+                var fila = "<tr>" +
+                    "<td>" + campo.nombre + "</td>" +
+                    "<td>" + campo.titulo + "</td>" +
+                    "<td>" + campo.requerido + "</td>" +
+                    "<td>" + campo.tipoTexto + "</td>" +
+                    "<td><button class='btn btn-danger' onclick='EliminarCampo(" + index + ")'>Eliminar</button></td>" +
+                    "</tr>";
+
+                document.getElementById("camposEncuestaContainer").innerHTML += fila;
+            });
+        }
+
+        function CrearEncuesta() {
+            var descripcionEncuesta = document.getElementById("descripcionEncuesta").value;
+            var nombreencuesta = document.getElementById("NombreEncuesta").value;
+            
+
+            if (descripcionEncuesta && nombreencuesta && camposEncuesta.length > 0) {
+                $.ajax({
+                    type: "POST", // o "GET" según tu necesidad
+                    url: '/Home/GuardarEncuesta', // Reemplaza con la ruta correcta a tu controlador
+                    data: {
+                        descripcion: descripcionEncuesta,
+                        nombre: nombreencuesta,
+                        campos: camposEncuesta
+                    },
+                    success: function (data) {
+                        location.reload();
+                       alert("Encuesta registada con exito")
+                        $('#crearEncuestaModal').modal('hide');
+                        
+                    },
+                    error: function (data) {
+                        alert("Hubo un error al crear la encuesta.");
+                    }
+                });
+            } else {
+                alert("Ingrese todos los datos necesarios para la encuesta.");
+            }
+        }
+
+        function ElinminarEncuesta(id){
+            $.ajax({
+                type: "GET", // o "GET" según tu necesidad
+                url: '/Home/EliminiarEncuesta?IdEncuesta=' + id, // Reemplaza con la ruta correcta a tu controlador
+                success: function (data) {
+                    location.reload();
+                    alert("Encuesta eliminada")
+                    $('#crearEncuestaModal').modal('hide');
+
+                },
+                error: function (data) {
+                    alert("Hubo un error al crear la encuesta.");
+                }
+            });
+        }
+
+        $(document).ready(function () {
+
+            $('#closeModalEditar').click(function(){
+                $('#editarModal').modal('hide')
+            })
+            function ObtenerTipoDatos() {
+                $.ajax({
+                    type: "GET",
+                    url: '/Home/ObtenerTipoDatos',
+                    success: function (data) {
+                        data.res.map(item => {
+                            $('#lsTipo').append('<option value="' + item.id + '">' + item.tipo + '</option>');
+                        });
+                    },
+                    error: function (data) {
+                        alert("Hubo un error al obtener los tipos de datos.");
+                    }
+                });
+            }
+
+            ObtenerTipoDatos()
+        })
+        
+        
+    </script>
+</body>
+</html>

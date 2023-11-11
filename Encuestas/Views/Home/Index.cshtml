@@ -1,0 +1,127 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head runat="server">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <title> Página de Inicio de Sesión</title>
+    <style type="text/css">
+        .btn-estilo {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            color: #3498db;
+            background-color: #ffffff;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+            .btn-estilo:hover {
+                background-color: #3498db;
+                color: #ffffff;
+            }
+
+        .input-estilo {
+            width: 200px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+            .input-estilo:focus {
+                border-color: #3498db;
+                box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+            }
+
+        .label-estilo {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <form runat="server">
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card" style="text-align: center;">
+                        <div class="card-header">
+                            <h2> Iniciar sesión</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="label-estilo" for="txtUsername"> Nombre de usuario:</label>
+                                <input class="input-estilo" type="email" ID="txtUsername" runat="server" CssClass="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label class="label-estilo" for="txtPassword"> Contraseña:</label>
+                                <input class="input-estilo" type="password" ID="txtPassword" runat="server" TextMode="Password" CssClass="form-control">
+                            </div>
+                            <div class="form-group text-center">
+                                <br />
+                                <button class="btn-estilo" type="button" onclick="Validar()"> Validar</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group text-center">
+                        <br />
+                        <button class="btn-estilo" type="button" onclick="Redireccionar()">Registro</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <script type="text/javascript">
+        function Validar() {
+            var username = document.getElementById("txtUsername").value;
+            var password = document.getElementById("txtPassword").value;
+
+            if (username === '' || password === '') {
+                alert("Por favor, complete ambos campos.");
+                return false;
+            }
+
+            $.ajax({
+                type: "GET",
+                url: '/Home/Login',
+                data: { user: username, pass: password },
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    if (data.success) {
+                        alert(data.res);
+                        setTimeout(function () {
+                            window.location.href = '/Home/Principal';
+                        }, 1000);
+                    } else {
+                        alert(data.res);
+                    }
+                },
+                error: function (data) {
+                    console.log(data);
+                    alert("Hubo un problema al iniciar sesión.");
+                }
+            });
+
+            return false; // Evita que el formulario se envíe de forma tradicional
+        }
+
+        function Redireccionar() {
+            setTimeout(function () {
+                window.location.href = '/Home/Registro';
+            }, 1000);
+        }
+    </script>
+</body>
+
+</html>
